@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 export const SpaceScene = () => {
   useEffect(() => {
@@ -8,14 +9,22 @@ export const SpaceScene = () => {
       100,
       window.outerWidth / window.outerHeight,
       0.1,
-      1000
+      10000
     );
     camera.position.z = 5;
 
+    
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1); // negro
     document.body.appendChild(renderer.domElement);
+
+    const orbitControls = new OrbitControls(camera , renderer.domElement);
+    orbitControls.update();
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.05;
 
     let animationId: number;
 
@@ -57,7 +66,6 @@ export const SpaceScene = () => {
 
         const animate = () => {
           animationId = requestAnimationFrame(animate);
-        //   points.rotation.x += 0.001;
           renderer.render(scene, camera);
         };
         animate();
@@ -69,6 +77,7 @@ export const SpaceScene = () => {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
+
     window.addEventListener("resize", handleResize);
 
     // 🔥 limpieza al desmontar el componente

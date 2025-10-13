@@ -7,7 +7,7 @@ export const SpaceScene = () => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       100,
-      window.outerWidth / window.outerHeight,
+      window.innerWidth / window.innerHeight,
       0.1,
       10000
     );

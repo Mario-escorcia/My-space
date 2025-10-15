@@ -4,6 +4,8 @@ import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 export const SpaceScene = () => {
   useEffect(() => {
+    const rayCaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       100,
@@ -12,16 +14,18 @@ export const SpaceScene = () => {
       10000
     );
     camera.position.z = 5;
-
-    
-
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+    const handleClick = (e: MouseEvent) => {
+      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1); // negro
     document.body.appendChild(renderer.domElement);
 
-    const orbitControls = new OrbitControls(camera , renderer.domElement);
+    const orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.update();
     orbitControls.enableDamping = true;
     orbitControls.dampingFactor = 0.05;
@@ -67,6 +71,15 @@ export const SpaceScene = () => {
         const animate = () => {
           animationId = requestAnimationFrame(animate);
           renderer.render(scene, camera);
+          rayCaster.setFromCamera(pointer, camera);
+
+          const intersects = rayCaster.intersectObjects(scene.children);
+          const { index, point } = intersects[0];
+            const star = stars[index]; // acceder a tu data original
+            console.log(
+              `🌟 ${star.proper || "Desconocida"} | mag: ${star.mag}`
+            );
+          
         };
         animate();
       });
@@ -77,7 +90,7 @@ export const SpaceScene = () => {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
-
+    window.addEventListener("click", handleClick);
     window.addEventListener("resize", handleResize);
 
     // 🔥 limpieza al desmontar el componente

@@ -1,7 +1,17 @@
 import { useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
+export type star = {
+  x: number;
+  y: number;
+  z: number;
+  mag: number;
+  ci: number;
+  proper: string;
+  con: string;
+};
 
+// IDEAS : enable and disable constellations, zoom to star, info panel, milky way background, galactic plane, planets, labels dinamically , allowing user to select that features
 export const SpaceScene = () => {
   useEffect(() => {
     const rayCaster = new THREE.Raycaster();
@@ -16,10 +26,10 @@ export const SpaceScene = () => {
     camera.position.z = 5;
     const renderer = new THREE.WebGLRenderer({ antialias: true });
 
-    const handleClick = (e: MouseEvent) => {
-      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-      pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
+    // const handleClick = (e: MouseEvent) => {
+    //   pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+    //   pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    // };
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1); // negro
@@ -31,15 +41,18 @@ export const SpaceScene = () => {
     orbitControls.dampingFactor = 0.05;
 
     let animationId: number;
+    let points: THREE.Points;
+    let stars: Array<star> = [];
 
     fetch("/data/stars.json")
       .then((res) => res.json())
-      .then((stars) => {
+      .then((data) => {
+        stars = data;
         const geometry = new THREE.BufferGeometry();
         const positions: number[] = [];
         const colors: number[] = [];
 
-        stars.forEach((star: any) => {
+        stars.forEach((star: star) => {
           positions.push(star.x, star.y, star.z);
 
           const color = new THREE.Color();
@@ -65,24 +78,88 @@ export const SpaceScene = () => {
           opacity: 1,
         });
 
-        const points = new THREE.Points(geometry, material);
+        points = new THREE.Points(geometry, material);
+        const linesMaterial = new THREE.LineBasicMaterial({
+          color: 0x56DFCF,
+          opacity: 0.3,
+          transparent: true,
+          linewidth: 1,
+        });
         scene.add(points);
 
+        const starsGroups: Map<string, Array<star>> = new Map();
+        for (const star of stars) {
+          const key = star.con;
+          if (!starsGroups.has(key)) {
+            starsGroups.set(key, []);
+          }
+          starsGroups.get(key)!.push(star);
+        }
+        const linePositions: number[] = [];
+
+
+        // Función para calcular distancia (opcional)
+        const dist = (a: star, b: star) =>
+          Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2);
+
+        // Recorremos cada constelación
+        for (const [conName, arr] of starsGroups.entries()) {
+          // tomar las más brillantes
+          const main = arr
+            .filter((s) => s.mag !== undefined)
+            .sort((a, b) => a.mag - b.mag)
+            .slice(0, 8);
+
+          if (main.length < 2) continue;
+
+          // conectar las más cercanas (simple, local)
+          for (let i = 0; i < main.length; i++) {
+            const a = main[i];
+            // buscar la más cercana siguiente
+            let best = null;
+            let bestDist = Infinity;
+            for (let j = 0; j < main.length; j++) {
+              if (i === j) continue;
+              const d = dist(a, main[j]);
+              if (d < bestDist) {
+                best = main[j];
+                bestDist = d;
+              }
+            }
+            if (best) {
+              linePositions.push(a.x, a.y, a.z, best.x, best.y, best.z);
+            }
+          }
+        }
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(linePositions, 3)
+        );
+        const lines = new THREE.LineSegments(lineGeometry, linesMaterial);
+        scene.add(lines);
         const animate = () => {
           animationId = requestAnimationFrame(animate);
           renderer.render(scene, camera);
-          rayCaster.setFromCamera(pointer, camera);
-
-          const intersects = rayCaster.intersectObjects(scene.children);
-          const { index, point } = intersects[0];
-            const star = stars[index]; // acceder a tu data original
-            console.log(
-              `🌟 ${star.proper || "Desconocida"} | mag: ${star.mag}`
-            );
-          
         };
         animate();
       });
+
+    const handleClick = (event: MouseEvent) => {
+      if (!points) return;
+
+      pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      rayCaster.setFromCamera(pointer, camera);
+      const intersects = rayCaster.intersectObject(points);
+
+      if (intersects.length > 0) {
+        const i = intersects[0].index!;
+        const star = stars[i];
+        console.log(`🌟 ${star.proper || "Desconocida"} | mag: ${star.mag}`);
+      }
+    };
 
     // manejar resize
     const handleResize = () => {

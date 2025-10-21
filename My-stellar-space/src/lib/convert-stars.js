@@ -6,8 +6,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const inputFile = path.join(__dirname, "../data/hyg_v42.csv");
-const outputFile = path.join(__dirname, "../data/stars.json");
+const inputFile = path.join(__dirname, "../../public/data/hyg_v42.csv");
+const outputFile = path.join(__dirname, "../../public/data/stars.json");
 
 console.log("📦 Leyendo archivo CSV...");
 
@@ -38,6 +38,7 @@ const filtered = result.data
     mag: star.mag,
     ci: star.ci ?? 0.4,
     proper: star.proper || "",
+    con : star.con || "",
   }));
 
 console.log(`✅ ${filtered.length} estrellas procesadas.`);

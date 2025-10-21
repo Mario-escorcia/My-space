@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 export type star = {
@@ -13,23 +13,21 @@ export type star = {
 
 // IDEAS : enable and disable constellations, zoom to star, info panel, milky way background, galactic plane, planets, labels dinamically , allowing user to select that features
 export const SpaceScene = () => {
+  const [enabledConstellations, setEnabledConstellations] = useState<boolean>(true);
+  const [enableRotationAnimation, setEnableRotationAnimation] = useState<boolean>(false);
   useEffect(() => {
     const rayCaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      100,
+      55,
       window.innerWidth / window.innerHeight,
       0.1,
       10000
     );
     camera.position.z = 5;
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true , alpha: true });
 
-    // const handleClick = (e: MouseEvent) => {
-    //   pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-    //   pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    // };
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1); // negro
@@ -137,9 +135,12 @@ export const SpaceScene = () => {
           new THREE.Float32BufferAttribute(linePositions, 3)
         );
         const lines = new THREE.LineSegments(lineGeometry, linesMaterial);
-        scene.add(lines);
+        if (enabledConstellations) {
+          scene.add(lines);
+        }
         const animate = () => {
           animationId = requestAnimationFrame(animate);
+          scene.rotateY( enableRotationAnimation ? 0.0005 : 0);
           renderer.render(scene, camera);
         };
         animate();

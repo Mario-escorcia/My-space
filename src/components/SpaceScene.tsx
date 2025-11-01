@@ -112,7 +112,7 @@ export const SpaceScene = () => {
           Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2);
 
         // Recorremos cada constelación
-        for (const [conName, arr] of starsGroups.entries()) {
+        for (const [_conName, arr] of starsGroups.entries()) {
           // tomar las más brillantes
           const main = arr
             .filter((s) => s.mag !== undefined)

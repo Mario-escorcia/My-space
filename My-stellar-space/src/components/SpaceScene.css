@@ -1,0 +1,24 @@
+div.check-features-cont {
+  height: auto;
+  width: auto;
+  padding: .5rem .5rem;
+  background-color: #f0f8ff;
+  position: absolute;
+  right: calc(50vw - 15.45rem);
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+}
+
+
+p.labels-features-p{
+    color: white;
+    font-size: .9rem;
+}

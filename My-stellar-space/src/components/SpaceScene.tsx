@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
+import "./SpaceScene.css";
+import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+
 export type star = {
   x: number;
   y: number;
@@ -13,21 +16,30 @@ export type star = {
 
 // IDEAS : enable and disable constellations, zoom to star, info panel, milky way background, galactic plane, planets, labels dinamically , allowing user to select that features
 export const SpaceScene = () => {
-  const [enabledConstellations, setEnabledConstellations] = useState<boolean>(true);
-  const [enableRotationAnimation, setEnableRotationAnimation] = useState<boolean>(false);
+  const [enabledConstellations, setEnabledConstellations] =
+    useState<boolean>(true);
+  const [enableRotationAnimation, setEnableRotationAnimation] =
+    useState<boolean>(true);
+
+  const UseConstelations = (event: boolean) => {
+    setEnabledConstellations(event);
+  };
+
+  const UseRotationAnimation = (event: boolean) => {
+    setEnableRotationAnimation(event);
+  };
   useEffect(() => {
     const rayCaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      55,
+      75,
       window.innerWidth / window.innerHeight,
       0.1,
       10000
     );
     camera.position.z = 5;
-    const renderer = new THREE.WebGLRenderer({ antialias: true , alpha: true });
-
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1); // negro
@@ -78,7 +90,7 @@ export const SpaceScene = () => {
 
         points = new THREE.Points(geometry, material);
         const linesMaterial = new THREE.LineBasicMaterial({
-          color: 0x56DFCF,
+          color: 0x56dfcf,
           opacity: 0.3,
           transparent: true,
           linewidth: 1,
@@ -94,7 +106,6 @@ export const SpaceScene = () => {
           starsGroups.get(key)!.push(star);
         }
         const linePositions: number[] = [];
-
 
         // Función para calcular distancia (opcional)
         const dist = (a: star, b: star) =>
@@ -140,7 +151,7 @@ export const SpaceScene = () => {
         }
         const animate = () => {
           animationId = requestAnimationFrame(animate);
-          scene.rotateY( enableRotationAnimation ? 0.0005 : 0);
+          scene.rotateY(enableRotationAnimation ? 0.0007 : 0);
           renderer.render(scene, camera);
         };
         animate();
@@ -178,7 +189,51 @@ export const SpaceScene = () => {
       renderer.dispose();
       document.body.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [enableRotationAnimation, enabledConstellations]);
 
-  return null;
+  return (
+    <>
+      <div className="check-features-cont">
+        <FormGroup
+          sx={{
+            flexDirection: "row",
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={enabledConstellations}
+                onChange={(e) => UseConstelations(e.target.checked)}
+                sx={{
+                  color: "white", 
+                  "&.Mui-checked": {
+                    color: "white",
+                  },
+                }}
+              />
+            }
+            label={<p className="labels-features-p">Enable Constellations</p>}
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={enableRotationAnimation}
+                onChange={(e) => UseRotationAnimation(e.target.checked)}
+                 sx={{
+                  color: "white",
+                  "&.Mui-checked": {
+                    color: "white",
+                  },
+                }}
+              />
+            }
+            label={
+              <p className="labels-features-p">Enable Rotation Animation</p>
+            }
+          />
+        </FormGroup>
+      </div>
+    </>
+  );
 };
